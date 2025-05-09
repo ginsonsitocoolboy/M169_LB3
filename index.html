@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Minecraft Server Panel</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #a9a9a9; }
+    .server { background: rgba(118, 0, 0, 0.571); padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+    button { margin-right: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Minecraft Server Hosting</h1>
+  <h6>!!!max.10 servers!!! pls delete other servers if reached 10 or more. thx :)</h6>
+  <input type="text" id="serverName" placeholder="Neuer Servername">
+  <button onclick="createServer()">Server erstellen</button>
+  <h2>Serverlist</h2>
+  <div id="serverList"></div>
+  <script>
+    function loadServers() {
+      fetch("/servers").then(res => res.json()).then(data => {
+        const container = document.getElementById("serverList");
+        container.innerHTML = '';
+        data.forEach(server => {
+          const div = document.createElement("div");
+          div.className = "server";
+          div.innerHTML = `
+            <strong>${server.name}.lowtaperfade.org</strong> (${server.status})
+            <button onclick="startServer('${server.name}')">Start</button>
+            <button onclick="stopServer('${server.name}')">Stop</button>
+            <button onclick="deleteServer('${server.name}')">Delete</button>
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+    function createServer() {
+      const name = document.getElementById("serverName").value;
+      fetch("/create", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      }).then(() => loadServers());
+    }
+    function startServer(name) {
+      fetch(`/start/${name}`, { method: "POST" }).then(() => loadServers());
+    }
+    function stopServer(name) {
+      fetch(`/stop/${name}`, { method: "POST" }).then(() => loadServers());
+    }
+    function deleteServer(name) {
+      fetch(`/delete/${name}`, { method: "POST" }).then(() => loadServers());
+    }
+    loadServers();
+  </script>
+</body>
+</html>
